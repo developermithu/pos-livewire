@@ -3,14 +3,31 @@
 
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../vendor/livewire/flux-pro/stubs/**/*.blade.php';
 @source '../../vendor/livewire/flux/stubs/**/*.blade.php';
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/*
+|--------------------------------------------------------------------------
+| Design tokens
+|--------------------------------------------------------------------------
+|
+| Every colour, radius and shadow in the application is declared here once.
+| Components consume the semantic tokens (surface / line / ink / accent /
+| positive / caution / critical / stock-*) and never a raw palette value,
+| so dark mode is a single block of overrides rather than a `dark:` variant
+| at every call site.
+|
+*/
+
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
+    /*
+    | Flux hardcodes `zinc-*` throughout its own components, so overriding the
+    | zinc ramp is the supported way to retheme Flux's neutrals. These values
+    | are Tailwind's `neutral` ramp — a warmer, less blue grey than real zinc.
+    */
     --color-zinc-50: #fafafa;
     --color-zinc-100: #f5f5f5;
     --color-zinc-200: #e5e5e5;
@@ -23,16 +40,92 @@
     --color-zinc-900: #171717;
     --color-zinc-950: #0a0a0a;
 
-    --color-accent: var(--color-neutral-800);
-    --color-accent-content: var(--color-neutral-800);
-    --color-accent-foreground: var(--color-white);
+    /* Surfaces — sunken (sidebar, table heads) < surface (page) < raised (panels) */
+    --color-surface: #ffffff;
+    --color-surface-raised: #ffffff;
+    --color-surface-sunken: #fafafa;
+
+    /* Hairlines. Static surfaces are separated by a border, never a shadow. */
+    --color-line: #e5e5e5;
+    --color-line-strong: #d4d4d4;
+
+    /* Text */
+    --color-ink: #171717;
+    --color-ink-muted: #525252;
+    --color-ink-faint: #737373;
+
+    /*
+    | Brand accent. `--color-accent{,-content,-foreground}` is Flux's own
+    | theming contract: it drives `flux:button variant="primary"`, the current
+    | sidebar item and the focus ring. Setting it here is what makes one accent
+    | mean "primary action or current location" and nothing else.
+    */
+    --color-accent: #0f6157;
+    --color-accent-content: #0f6157;
+    --color-accent-foreground: #ffffff;
+    --color-accent-wash: #e4f1ee;
+
+    /* Semantic state — never drawn in the accent hue. */
+    --color-positive: #15803d;
+    --color-positive-wash: #dcfce7;
+    --color-caution: #b45309;
+    --color-caution-wash: #fef3c7;
+    --color-critical: #b91c1c;
+    --color-critical-wash: #fee2e2;
+    --color-info: #1d4ed8;
+    --color-info-wash: #dbeafe;
+
+    /*
+    | Stock level gets its own four-step ramp rather than reusing the three
+    | semantic colours: an operator reads stock at a glance, and three buckets
+    | is not enough resolution for a reorder decision.
+    */
+    --color-stock-out: #b91c1c;
+    --color-stock-critical: #c2410c;
+    --color-stock-low: #b45309;
+    --color-stock-healthy: #15803d;
+
+    /* Two radii, and only two. Controls match Flux; surfaces are panels. */
+    --radius-control: 0.5rem;
+    --radius-surface: 0.75rem;
+
+    /* Elevation is reserved for things that actually float. */
+    --shadow-overlay: 0 10px 30px -12px rgb(0 0 0 / 0.28), 0 2px 8px -3px rgb(0 0 0 / 0.12);
 }
 
 @layer theme {
     .dark {
-        --color-accent: var(--color-white);
-        --color-accent-content: var(--color-white);
-        --color-accent-foreground: var(--color-neutral-800);
+        --color-surface: #262626;
+        --color-surface-raised: #2e2e2e;
+        --color-surface-sunken: #171717;
+
+        --color-line: #404040;
+        --color-line-strong: #525252;
+
+        --color-ink: #fafafa;
+        --color-ink-muted: #a3a3a3;
+        --color-ink-faint: #8a8a8a;
+
+        --color-accent: #4dbfa9;
+        --color-accent-content: #4dbfa9;
+        --color-accent-foreground: #04231f;
+        --color-accent-wash: #123832;
+
+        --color-positive: #4ade80;
+        --color-positive-wash: #14311f;
+        --color-caution: #fbbf24;
+        --color-caution-wash: #3a2a08;
+        --color-critical: #f87171;
+        --color-critical-wash: #3c1615;
+        --color-info: #60a5fa;
+        --color-info-wash: #152341;
+
+        --color-stock-out: #f87171;
+        --color-stock-critical: #fb923c;
+        --color-stock-low: #fbbf24;
+        --color-stock-healthy: #4ade80;
+
+        --shadow-overlay: 0 10px 30px -12px rgb(0 0 0 / 0.6), 0 2px 8px -3px rgb(0 0 0 / 0.4);
     }
 }
 
@@ -43,8 +136,23 @@
     ::before,
     ::backdrop,
     ::file-selector-button {
-        border-color: var(--color-gray-200, currentColor);
+        border-color: var(--color-line, currentColor);
     }
+
+    /*
+    | This is a dense operational tool, and Flux is designed around a 14px
+    | base. Set it on the body rather than the root so the rem-based spacing
+    | and sizing scales are unaffected.
+    */
+    body {
+        font-size: 0.875rem;
+        line-height: 1.5rem;
+    }
+}
+
+/* Alpine sets x-cloak on elements that must not flash before Alpine boots. */
+[x-cloak] {
+    display: none !important;
 }
 
 [data-flux-field]:not(ui-radio, ui-checkbox) {
@@ -60,7 +168,3 @@ textarea:focus[data-flux-control],
 select:focus[data-flux-control] {
     @apply outline-hidden ring-2 ring-accent ring-offset-2 ring-offset-accent-foreground;
 }
-
-/* \[:where(&)\]:size-4 {
-    @apply size-4;
-} */

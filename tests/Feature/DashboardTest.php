@@ -14,3 +14,13 @@ test('authenticated users can visit the dashboard', function () {
     $response = $this->get(route('dashboard'));
     $response->assertOk();
 });
+
+test('the dashboard renders as a livewire page component', function () {
+    $this->actingAs(User::factory()->create());
+
+    $this->get(route('dashboard'))
+        ->assertOk()
+        ->assertSeeLivewire('pages::dashboard')
+        ->assertSee('Needs reorder')
+        ->assertSee('Recent activity');
+});
