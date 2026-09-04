@@ -1,0 +1,14 @@
+# Project Rules Index
+
+Before planning or editing, find the row whose globs match the file's path and read that rule file.
+
+| Applies to | Rule file |
+| --- | --- |
+| resources/views/components/** | .ai/rules/components.md |
+| resources/css/app.css | .ai/rules/css.md |
+| resources/js/** | .ai/rules/js.md |
+| resources/views/layouts/** | .ai/rules/layouts.md |
+| database/migrations/** | .ai/rules/migrations.md |
+| resources/views/pages/** | .ai/rules/pages.md |
+| tests/** | .ai/rules/tests.md |
+| resources/views/** | .ai/rules/views.md |
