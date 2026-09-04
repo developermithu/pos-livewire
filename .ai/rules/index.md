@@ -10,5 +10,6 @@ Before planning or editing, find the row whose globs match the file's path and r
 | resources/views/layouts/** | .ai/rules/layouts.md |
 | database/migrations/** | .ai/rules/migrations.md |
 | resources/views/pages/** | .ai/rules/pages.md |
+| app/Support/** | .ai/rules/support.md |
 | tests/** | .ai/rules/tests.md |
 | resources/views/** | .ai/rules/views.md |
