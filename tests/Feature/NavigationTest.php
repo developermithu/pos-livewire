@@ -12,22 +12,22 @@ test('items pointing at a registered route are available and linkable', function
 });
 
 test('items pointing at a route that does not exist yet are unavailable', function () {
-    $item = NavItem::to('Products', 'tag', 'products.index');
+    $item = NavItem::to('Sales', 'shopping-bag', 'sales.index');
 
     expect($item->isAvailable())->toBeFalse()
         ->and($item->url())->toBeNull();
 });
 
 test('a parent is available only once one of its children is', function () {
-    $parent = NavItem::group('Catalog', 'squares-2x2', [
-        NavItem::to('Products', 'tag', 'products.index'),
+    $parent = NavItem::group('Inventory', 'archive-box', [
+        NavItem::to('Transfers', 'arrow-path-rounded-square', 'transfers.index'),
     ]);
 
     expect($parent->isAvailable())->toBeFalse()
         ->and($parent->url())->toBeNull();
 
-    $reachable = NavItem::group('Overview', 'home', [
-        NavItem::to('Dashboard', 'home', 'dashboard'),
+    $reachable = NavItem::group('Catalog', 'squares-2x2', [
+        NavItem::to('Products', 'tag', 'products.index'),
     ]);
 
     expect($reachable->isAvailable())->toBeTrue();
@@ -44,11 +44,21 @@ test('a parent reports itself current when a child is current', function () {
 });
 
 test('destinations only include routes that exist', function () {
-    $destinations = (new Navigation)->destinations();
+    $labels = array_column((new Navigation)->destinations(), 'label');
 
-    expect($destinations)->toHaveCount(1)
-        ->and($destinations[0]['label'])->toBe('Dashboard')
-        ->and($destinations[0]['url'])->toBe(route('dashboard'));
+    // Phase 3 registered the catalog; everything else is still unrouted and so
+    // stays out of the command menu.
+    expect($labels)->toEqualCanonicalizing(['Dashboard', 'Products', 'Categories', 'Brands', 'Units'])
+        ->and($labels)->not->toContain('Sales', 'Point of Sale', 'Stock');
+});
+
+test('the catalog items light up once their routes are registered', function () {
+    $this->actingAs(User::factory()->create());
+
+    $this->get(route('dashboard'))
+        ->assertOk()
+        ->assertSee(route('products.index'))
+        ->assertSee(route('categories.index'));
 });
 
 test('the sidebar renders every group from the single navigation source', function () {

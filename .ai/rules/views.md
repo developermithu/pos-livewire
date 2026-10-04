@@ -15,3 +15,13 @@ Available and should be used rather than reimplemented: button, input, select, c
 Icons: Heroicons via `<flux:icon.name />` or `<flux:icon :$icon />`. Pull Lucide gaps in with `php artisan flux:icon <name>`. Sizes 16 (inline/menu), 20 (nav/toolbar), 24 (empty states). Raw inline `<svg>` in a page template is not acceptable.
 
 Every column of figures — money, quantities, SKUs, order numbers — gets `tabular-nums`.
+
+## Never nest a __() array argument inside a Blade component attribute
+Blade's component-attribute parser splits on commas before it parses PHP, so an array argument inside a component attribute expression compiles to garbage and throws a ParseError at render time — not at compile time, so it looks like a runtime bug.
+
+Broken: `<x-ui.empty-state :description="__('Nothing matches :term.', ['term' => $search])" />`
+Also broken on Flux tags: `<flux:button :aria-label="__('Actions for :name', ['name' => $x])" />`
+
+This only affects component tags (`<x-…>`, `<flux:…>`), not plain HTML elements.
+
+Fix: precompute the string first — `@php($label = __('Actions for :name', ['name' => $x]))` then `:aria-label="$label"`, or expose it as a `#[Computed]` property on the page component. Applies to `wire:confirm` on a Flux tag too: bind it (`:wire:confirm="$prompt"`) rather than interpolating.
